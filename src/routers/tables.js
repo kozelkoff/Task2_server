@@ -34,39 +34,43 @@ tableRouter.get('/table/:filename', async (req, res) => {
 
 tableRouter.post('/table', async (req, res) => {
     const { body } = req;
-    const { fileName, tableData } = body;
+    const { fileName, tableDataSheets, tableDataJSON } = body;
+
+
 
     const result = await knex('general').insert({
         name: fileName,
-        data: JSON.stringify(tableData)
+        data: JSON.stringify(tableDataSheets)
     });
 
 
 
-    for(let ind=8; ind<tableData.length; ind++){
-        if(!(tableData[ind]['Название банка'].toString().includes('КЛАСС'))){
+    for(let ind=8; ind<tableDataJSON.length; ind++){
+        if(!(tableDataJSON[ind]['Название банка'].toString().includes('КЛАСС'))){
             let resultInSaldo = await knex('insaldo').insert({
-                account: tableData[ind]['Название банка'].toString(),
-                assets: tableData[ind]['__EMPTY'].toString(),
-                liabilities: tableData[ind]['__EMPTY_1'].toString(),
+                account: tableDataJSON[ind]['Название банка'].toString(),
+                assets: tableDataJSON[ind]['__EMPTY'].toString(),
+                liabilities: tableDataJSON[ind]['__EMPTY_1'].toString(),
                 excelname: fileName
             });
 
             let resultCashFlow = await knex('cashflow').insert({
-                account: tableData[ind]['Название банка'].toString(),
-                debit: tableData[ind]['__EMPTY_2'].toString(),
-                credit: tableData[ind][' '].toString(),
+                account: tableDataJSON[ind]['Название банка'].toString(),
+                debit: tableDataJSON[ind]['__EMPTY_2'].toString(),
+                credit: tableDataJSON[ind][' '].toString(),
                 excelname: fileName
             });
 
             let resultOutSaldo = await knex('outsaldo').insert({
-                account: tableData[ind]['Название банка'].toString(),
-                assets: tableData[ind]['__EMPTY_3'].toString(),
-                liabilities: tableData[ind]['__EMPTY_4'].toString(),
+                account: tableDataJSON[ind]['Название банка'].toString(),
+                assets: tableDataJSON[ind]['__EMPTY_3'].toString(),
+                liabilities: tableDataJSON[ind]['__EMPTY_4'].toString(),
                 excelname: fileName
             });
         }
     }
+
+
 
     if (result) {
         res.status(200).json(table);
